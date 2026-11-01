@@ -1,12 +1,12 @@
-name: 데이터 갱신
+name: Update data
 
 on:
   schedule:
-    - cron: '30 12 * * 6'   # 토 21:30 KST  (로또 추첨 직후)
-    - cron: '30 21 * * 6'   # 일 06:30 KST  (재확인)
-    - cron: '30 11 * * 4'   # 목 20:30 KST  (연금복권 추첨 직후)
-    - cron: '0 22 * * *'    # 매일 07:00 KST (스피또 잔여수량)
-  workflow_dispatch:         # 수동 실행 버튼
+    - cron: '30 12 * * 6'   # Sat 21:30 KST (after Lotto draw)
+    - cron: '30 21 * * 6'   # Sun 06:30 KST (recheck)
+    - cron: '30 11 * * 4'   # Thu 20:30 KST (after Pension draw)
+    - cron: '0 22 * * *'    # Daily 07:00 KST (Speetto)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,18 +26,18 @@ jobs:
         with:
           node-version: '22'
 
-      - name: 데이터 받아오기
+      - name: Fetch data
         run: node scripts/update.mjs
 
-      - name: 변경이 있으면 저장
+      - name: Save changes
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/lottery.json
           if git diff --cached --quiet; then
-            echo "저장할 변경 없음"
+            echo "No changes to save"
           else
-            git commit -m "data: 당첨번호 갱신"
+            git commit -m "data: update results"
             git push
           fi
