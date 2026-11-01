@@ -1,4 +1,4 @@
-name: 주소 탐색 (한 번만 실행)
+name: Discover endpoints (run once)
 
 on:
   workflow_dispatch:
@@ -12,8 +12,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: 연금복권·스피또 데이터 주소 찾기
+
+      - name: Find data endpoints for Pension and Speetto
         run: node scripts/discover.mjs
