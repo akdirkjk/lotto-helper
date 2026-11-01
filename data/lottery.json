@@ -1,0 +1,7 @@
+{
+ "schema": 1,
+ "generatedAt": "",
+ "lotto": { "latest": 0, "source": "", "draws": [] },
+ "pension": { "status": "not-configured", "message": "", "draws": [] },
+ "speetto": { "status": "not-configured", "message": "", "rows": [] }
+}
