@@ -13,7 +13,7 @@ const KEEP_PER_GAME = 2;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function remainTotal(s) {
-  const m = /^\s*([\d,]+)\s*\/\s*([\d,]+)\s*$/.exec(String(s ?? ''));
+  const m = /^\s*([\d,]+)[^\d,/]*\/\s*([\d,]+)[^\d,/]*$/.exec(String(s ?? ''));
   return m ? { remain: Number(m[1].replace(/,/g, '')), total: Number(m[2].replace(/,/g, '')) } : null;
 }
 
