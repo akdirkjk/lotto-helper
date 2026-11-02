@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-02T06:19:20.152Z",
+ "generatedAt": "2026-11-02T11:29:24.095Z",
  "lotto": {
   "latest": 1248,
   "source": "official",
@@ -1575,8 +1575,8 @@
   ]
  },
  "speetto": {
-  "status": "not-configured",
-  "message": "스피또 자동 연동 주소가 아직 설정되지 않았습니다.",
+  "status": "error",
+  "message": "speetto2000: 2 item(s) have an unexpected format",
   "rows": []
  }
 }
