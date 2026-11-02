@@ -30,7 +30,7 @@ function clean(it, code, key) {
   const rate = Number(String(it.stSpmtRt ?? '').replace('%', ''));
   const r1 = remainTotal(it.stRnk1Rt);
   let r2 = remainTotal(it.stRnk2Rt);
-  if (!r2 && /^\s*[-\u2013]?\s*$/.test(String(it.stRnk2Rt ?? ''))) r2 = { remain: 0, total: 0 };   // no 2nd prize shown
+  if (!r2 && !/\d/.test(String(it.stRnk2Rt ?? ''))) r2 = { remain: 0, total: 0 };   // no 2nd prize (empty, "-", "-/-", a label ...)
   if (!Number.isInteger(round) || round < 1) return null;
   if (!Number.isFinite(rate) || rate < 0 || rate > 100) return null;
   if (!r1 || !r2 || r1.remain > r1.total || r2.remain > r2.total) return null;
@@ -62,7 +62,12 @@ export async function fetchSpeetto({ prev, env, getJson }) {
     }
     const mine = list.filter((it) => it && it.stGmTypeCd === code);
     const good = mine.map((it) => clean(it, code, key)).filter(Boolean);
-    if (good.length < mine.length) throw new Error(`${key}: ${mine.length - good.length} item(s) have an unexpected format`);
+    if (good.length < mine.length) {
+      const bad = mine.find((it) => !clean(it, code, key));
+      const show = (k) => k + '=' + JSON.stringify(String(bad[k] ?? '')).slice(0, 40);
+      const sample = ['stEpsd', 'stSpmtRt', 'stRnk1Rt', 'stRnk2Rt'].map(show).join(' ');
+      throw new Error(`${key}: ${mine.length - good.length} item(s) have an unexpected format (e.g. ${sample})`);
+    }
     good.sort((a, b) => b.round - a.round);
     rows.push(...good.slice(0, KEEP_PER_GAME));
   }
