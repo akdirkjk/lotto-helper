@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-02T11:36:33.017Z",
+ "generatedAt": "2026-11-02T11:44:45.929Z",
  "lotto": {
   "latest": 1248,
   "source": "official",
@@ -1575,8 +1575,60 @@
   ]
  },
  "speetto": {
-  "status": "error",
-  "message": "speetto2000: 2 item(s) have an unexpected format (e.g. stEpsd=\"70\" stSpmtRt=\"39\" stRnk1Rt=\"8매/8매\" stRnk2Rt=\"21매/24매\")",
-  "rows": []
+  "status": "ok",
+  "source": "official",
+  "checkedAt": "2026-11-02",
+  "rows": [
+   {
+    "game": "speetto2000",
+    "round": 70,
+    "rate": 39,
+    "totalFirst": 8,
+    "remainFirst": 8,
+    "totalSecond": 24,
+    "remainSecond": 21,
+    "asOf": "2026-10-30"
+   },
+   {
+    "game": "speetto2000",
+    "round": 69,
+    "rate": 99,
+    "totalFirst": 10,
+    "remainFirst": 1,
+    "totalSecond": 30,
+    "remainSecond": 4,
+    "asOf": "2026-10-30"
+   },
+   {
+    "game": "speetto1000",
+    "round": 111,
+    "rate": 8,
+    "totalFirst": 11,
+    "remainFirst": 11,
+    "totalSecond": 55,
+    "remainSecond": 54,
+    "asOf": "2026-10-30"
+   },
+   {
+    "game": "speetto1000",
+    "round": 110,
+    "rate": 84,
+    "totalFirst": 12,
+    "remainFirst": 3,
+    "totalSecond": 60,
+    "remainSecond": 26,
+    "asOf": "2026-10-30"
+   },
+   {
+    "game": "speetto500",
+    "round": 48,
+    "rate": 59,
+    "totalFirst": 5,
+    "remainFirst": 3,
+    "totalSecond": 100,
+    "remainSecond": 46,
+    "asOf": "2026-10-30"
+   }
+  ]
  }
 }
