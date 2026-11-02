@@ -1,17 +1,75 @@
-// 스피또(500/1000/2000) 발행내역(출고율·잔여수량) 수집부.
-//
-// ⚠️ 아직 연결되지 않았습니다. 동행복권 스피또 발행내역 페이지(/st/pblcnDsctn)는
-//    표 틀만 있고 값은 내부 JSON 으로 불러옵니다. 그 주소를 확인해야 합니다.
-//
-// 주소가 확인되면 이 함수만 채우면 됩니다. 반환 형식:
-//   { status: 'ok', updatedAt: '2026-10-31T00:00:00Z',
-//     rows: [{ game: 'speetto2000', round: 56, rate: 92, totalFirst: 6, remainFirst: 1,
-//              totalSecond: 18, remainSecond: 2 }, ...] }
-//   game 값: speetto2000 | speetto1000 | speetto500   (게임마다 최신 2개 회차면 충분)
-export async function fetchSpeetto({ prev }) {
+// Speetto (500 / 1000 / 2000) on-sale rounds: store stocking rate and remaining 1st / 2nd prizes.
+// Uses the same JSON the official "issue details" page loads:
+//   GET /st/selectPblcnDsctn.do?gdsType=SP2000&gdsPrice=2000&gdsStatus=<on sale>&pageNum=1&recordCountPerPage=8
+// All three filters are required by the server. Items carry:
+//   stGmTypeCd, stEpsd (round), stSpmtRt (store stocking rate %), stRnk1Rt / stRnk2Rt ("remaining/total"), dataChgDt (as-of date)
+const ON_SALE = '\uD310\uB9E4\uC911';   // the on-sale status value used by the page (kept as escapes so the file stays ASCII)
+const GAMES = [
+  ['SP2000', '2000', 'speetto2000'],
+  ['SP1000', '1000', 'speetto1000'],
+  ['SP500', '500', 'speetto500']
+];
+const KEEP_PER_GAME = 2;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function remainTotal(s) {
+  const m = /^\s*([\d,]+)\s*\/\s*([\d,]+)\s*$/.exec(String(s ?? ''));
+  return m ? { remain: Number(m[1].replace(/,/g, '')), total: Number(m[2].replace(/,/g, '')) } : null;
+}
+
+function asOfDate(s) {
+  s = String(s ?? '').trim();
+  if (/^\d{2}-\d{2}-\d{2}$/.test(s)) return '20' + s;
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  return '';
+}
+
+function clean(it, code, key) {
+  if (!it || it.stGmTypeCd !== code) return null;
+  const round = Number(it.stEpsd);
+  const rate = Number(String(it.stSpmtRt ?? '').replace('%', ''));
+  const r1 = remainTotal(it.stRnk1Rt);
+  let r2 = remainTotal(it.stRnk2Rt);
+  if (!r2 && /^\s*[-\u2013]?\s*$/.test(String(it.stRnk2Rt ?? ''))) r2 = { remain: 0, total: 0 };   // no 2nd prize shown
+  if (!Number.isInteger(round) || round < 1) return null;
+  if (!Number.isFinite(rate) || rate < 0 || rate > 100) return null;
+  if (!r1 || !r2 || r1.remain > r1.total || r2.remain > r2.total) return null;
   return {
-    status: 'not-configured',
-    message: '스피또 자동 연동 주소가 아직 설정되지 않았습니다.',
-    rows: (prev && prev.rows) || []
+    game: key, round, rate,
+    totalFirst: r1.total, remainFirst: r1.remain,
+    totalSecond: r2.total, remainSecond: r2.remain,
+    asOf: asOfDate(it.dataChgDt)
   };
+}
+
+export async function fetchSpeetto({ prev, env, getJson }) {
+  const host = env.DH_HOST || 'https://www.dhlottery.co.kr';
+  const now = env.NOW_MS ? Number(env.NOW_MS) : Date.now();
+  const rows = [];
+
+  for (const [code, price, key] of GAMES) {
+    await sleep(env.NOW_MS ? 0 : 600);   // be gentle with the server
+    const qs = `gdsType=${code}&gdsPrice=${price}&gdsStatus=${encodeURIComponent(ON_SALE)}&pageNum=1&recordCountPerPage=8`;
+    const json = await getJson(host + '/st/selectPblcnDsctn.do?' + qs, {
+      referer: host + '/st/pblcnDsctn?stGmTypeCd=st' + price,
+      'x-requested-with': 'XMLHttpRequest',
+      AJAX: 'true',
+      requestMenuUri: '/st/pblcnDsctn'
+    });
+    const list = json && json.data && json.data.list;
+    if (!Array.isArray(list)) {
+      throw new Error(`${key}: unexpected response (data.list missing)` + (json && json.resultMessage ? ': ' + json.resultMessage : ''));
+    }
+    const mine = list.filter((it) => it && it.stGmTypeCd === code);
+    const good = mine.map((it) => clean(it, code, key)).filter(Boolean);
+    if (good.length < mine.length) throw new Error(`${key}: ${mine.length - good.length} item(s) have an unexpected format`);
+    good.sort((a, b) => b.round - a.round);
+    rows.push(...good.slice(0, KEEP_PER_GAME));
+  }
+
+  if (!rows.length) throw new Error('No on-sale rounds were returned for any game');
+
+  const checkedAt = new Date(now + 9 * 3600 * 1000).toISOString().slice(0, 10);   // KST date of this check
+  console.log(`Speetto: ${rows.length} on-sale rounds (${rows.map((r) => r.game.replace('speetto', '') + ':' + r.round).join(', ')})`);
+  return { status: 'ok', source: 'official', checkedAt, rows };
 }
