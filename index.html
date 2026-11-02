@@ -334,23 +334,9 @@
         <p class="desc">
             최근 26회차 기준, <strong>조 및 각 자리수별로 3회~5회 출현한 숫자</strong>를 조건별로 필터링하여 5개 게임을 추천합니다.
         </p>
-        <div id="pensionStatusBox" class="status-box info" role="status" aria-live="polite" style="display:block;">저장된 당첨번호를 확인하는 중...</div>
+        <div id="pensionStatusBox" class="status-box info" role="status" aria-live="polite" style="display:block;">당첨번호를 불러오는 중...</div>
         <button class="btn-main" style="margin-top:12px;" onclick="startPensionParsing()">⚡ 자리별 번호 추출 및 분석 시작</button>
-        <button class="btn-sub" onclick="togglePensionHistory()">📜 저장된 최근 26회차 당첨번호 보기</button>
-
-        <details class="import" id="pensionImportBox">
-            <summary>📥 최신 당첨번호 추가 / 갱신</summary>
-            <p class="note">
-                연금복권은 공개된 자동 조회 API가 없어서, 당첨번호를 직접 붙여 넣어 주세요. 한 번 저장하면 다음부터는 <strong>새 회차만 추가</strong>하면 됩니다.<br>
-                한 줄에 한 회차씩, <strong>회차 조 6자리</strong> 형식입니다. 예)<br>
-                <code>324 2 485216</code><br>
-                <code>323회 4조 604270</code>
-            </p>
-            <textarea id="pensionInput" placeholder="324 2 485216&#10;323 4 604270"></textarea>
-            <button class="btn-sub" style="margin-top:6px;" onclick="importPension()">➕ 추가 / 갱신하기</button>
-            <button class="btn-sub" style="background:#991b1b;" onclick="clearPension()">🗑️ 저장된 연금복권 데이터 모두 지우기</button>
-            <div id="pensionImportMsg" class="status-box" role="status" aria-live="polite"></div>
-        </details>
+        <button class="btn-sub" onclick="togglePensionHistory()">📜 최근 26회차 당첨번호 보기</button>
 
         <div id="pensionCandidatesBox" class="candidates-box"></div>
         <div id="pensionHistoryBox" class="history-list"></div>
@@ -366,60 +352,15 @@
 <!-- ==================== 3. 스피또 탭 ==================== -->
 <div id="speettoTab" class="tab-content">
     <div class="card">
-        <h1>🎫 스피또 판매점 입고율 및 구매 회차 추천</h1>
-        <p class="desc">
-            스피또 500, 1000, 2000의 최근 2개 회차 중 <strong>판매점 입고율 90% 이상 & 1등 잔여 수량 1개 이상</strong> 조건을 만족하는 회차를 추천합니다.
-        </p>
-        <p class="note" style="margin-top:-6px;">
-            동행복권 <strong>발행내역</strong>의 "판매점 입고율"과 1등·2등 잔여수량을 매일 자동으로 가져옵니다(판매중인 회차 기준). 자동으로 가져오지 못할 때만 아래에 직접 입력할 수 있어요.<br>
-            ※ 판매점 입고율은 판매점에 <strong>입고된 비율</strong>이며 소비자에게 실제로 팔린 비율은 아닙니다. 각 수치의 기준일은 표에 함께 표시됩니다.
-        </p>
-        <div id="speettoStatusBox" class="status-box info" role="status" aria-live="polite" style="display:block;">입력된 데이터를 확인하는 중...</div>
-
-        <details class="import" id="speettoImportBox" open>
-            <summary>📝 회차 데이터 입력</summary>
-            <div class="form-grid">
-                <label>종류
-                    <select id="spGame">
-                        <option value="speetto2000">스피또 2000</option>
-                        <option value="speetto1000">스피또 1000</option>
-                        <option value="speetto500">스피또 500</option>
-                    </select>
-                </label>
-                <label>회차
-                    <input id="spRound" type="number" inputmode="numeric" min="1" placeholder="예: 56">
-                </label>
-                <label>판매점 입고율 (%)
-                    <input id="spRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="예: 92">
-                </label>
-                <span></span>
-                <label>1등 전체 (매)
-                    <input id="spTotalFirst" type="number" inputmode="numeric" min="0" placeholder="예: 6">
-                </label>
-                <label>1등 잔여 (매)
-                    <input id="spRemainFirst" type="number" inputmode="numeric" min="0" placeholder="예: 1">
-                </label>
-                <label>2등 전체 (매)
-                    <input id="spTotalSecond" type="number" inputmode="numeric" min="0" placeholder="예: 18">
-                </label>
-                <label>2등 잔여 (매)
-                    <input id="spRemainSecond" type="number" inputmode="numeric" min="0" placeholder="예: 2">
-                </label>
-            </div>
-            <button class="btn-sub" style="margin-top:10px;" onclick="addSpeettoEntry()">➕ 저장하기 (같은 종류·회차는 덮어씀)</button>
-            <div id="speettoImportMsg" class="status-box" role="status" aria-live="polite"></div>
-            <div id="speettoEntries" style="margin-top:8px;"></div>
-        </details>
-
-        <button class="btn-main" style="margin-top:12px;" onclick="analyzeSpeettoData()">📊 스피또 데이터 분석 및 회차 추천</button>
-        <div id="speettoResultsBox" style="display: none;">
-            <div id="speettoContent"></div>
-        </div>
+        <h1>🎫 스피또 데이터 분석 및 회차 추천</h1>
+        <p class="desc" id="speettoCaption"></p>
+        <div id="speettoContent" role="status" aria-live="polite">⏳ 데이터를 불러오는 중...</div>
     </div>
 </div>
 
 <p class="note footer-note">
     ※ 본 도구는 과거 번호를 단순 집계하는 <strong>참고·재미용</strong>입니다. 추첨은 매 회 독립적이므로 어떤 조합도 당첨 확률은 같습니다.<br>
+    ※ 스피또의 판매점 입고율은 판매점에 입고된 비율이며, 소비자에게 실제로 팔린 비율은 아닙니다.<br>
     ※ 로또 데이터: 동행복권 공개 조회(매일 자동 갱신) 및 비공식 JSON(smok95/lotto). 오류가 있을 수 있으니 정확한 결과는 동행복권에서 확인하세요.
 </p>
 
@@ -438,7 +379,7 @@
         AUTO_URL: './data/lottery.json',   // 이 사이트가 예약 실행으로 갱신해 두는 파일
         TIMEOUT_MS: 8000
     };
-    const KEY = { lotto: 'lotto-cache-v1', pension: 'pension-data-v1', speetto: 'speetto-data-v1' };
+    const KEY = { lotto: 'lotto-cache-v1' };
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -676,81 +617,29 @@
     }
 
     // ==========================================
-    // 2. 연금복권 720+ (직접 붙여넣기 방식 + 브라우저에 저장)
+    // 2. 연금복권 720+ (매일 자동 갱신되는 data/lottery.json 사용)
     // ==========================================
     let pension = [];   // [{draw, group, numbers[6]}] 최신순
+    let pensionNote = '';
     let validPensionCandidates = { group: [], pos: [[], [], [], [], [], []] };
 
     const validPensionRow = (r) => r && Number.isInteger(r.draw) && r.draw > 0 &&
         Number.isInteger(r.group) && r.group >= 1 && r.group <= 5 &&
         Array.isArray(r.numbers) && r.numbers.length === 6 && r.numbers.every(n => Number.isInteger(n) && n >= 0 && n <= 9);
 
-    let pensionManual = [], pensionAuto = [], pensionSource = 'manual', pensionAutoNote = '';
-    function refreshPension() {
-        const useAuto = pensionAuto.length >= 10;
-        pension = useAuto ? pensionAuto : pensionManual;
-        pensionSource = useAuto ? 'auto' : 'manual';
-    }
     async function loadPension() {
-        const d = store(KEY.pension).get();
-        pensionManual = (d && Array.isArray(d.rows)) ? d.rows.filter(validPensionRow).sort((a, b) => b.draw - a.draw) : [];
         const auto = await loadAutoData();
         const p = auto && auto.pension;
-        pensionAuto = (p && Array.isArray(p.draws))
+        pension = (p && Array.isArray(p.draws))
             ? p.draws.map(r => ({ draw: Number(r.draw), group: Number(r.group), numbers: (Array.isArray(r.numbers) ? r.numbers : []).map(Number) })).filter(validPensionRow).sort((a, b) => b.draw - a.draw)
             : [];
-        pensionAutoNote = (p && p.status && p.status !== 'ok') ? String(p.message || '') : '';
-        refreshPension();
-        renderPensionStatus();
-    }
-    function savePension() { store(KEY.pension).set({ rows: pensionManual.slice(0, 120), savedAt: Date.now() }); }
-
-    function parsePensionText(text) {
-        const rows = [], errors = [];
-        text.split(/\r?\n/).forEach((line, i) => {
-            const raw = line.trim();
-            if (!raw) return;
-            const t = raw.replace(/[회조,|\/\t]+/g, ' ').replace(/\s+/g, ' ').trim().split(' ');
-            const draw = Number(t[0]), group = Number(t[1]), digits = t.slice(2).join('');
-            if (!Number.isInteger(draw) || draw < 1 || !Number.isInteger(group) || group < 1 || group > 5 || !/^\d{6}$/.test(digits)) {
-                errors.push(`${i + 1}번째 줄`);
-                return;
-            }
-            rows.push({ draw, group, numbers: digits.split('').map(Number) });
-        });
-        return { rows, errors };
-    }
-
-    function importPension() {
-        const { rows, errors } = parsePensionText($('pensionInput').value);
-        if (!rows.length) {
-            setBox('pensionImportMsg', 'error', '읽을 수 있는 줄이 없습니다. <b>회차 조 6자리</b> 형식(예: <code>324 2 485216</code>)인지 확인해 주세요.');
-            return;
-        }
-        const map = new Map(pensionManual.map(r => [r.draw, r]));
-        rows.forEach(r => map.set(r.draw, r));
-        pensionManual = [...map.values()].sort((a, b) => b.draw - a.draw);
-        savePension();
-        refreshPension();
-        $('pensionInput').value = '';
-        setBox('pensionImportMsg', errors.length ? 'warn' : 'ok', `✅ ${rows.length}건을 저장했습니다.` + (errors.length ? ` (형식 오류로 제외: ${esc(errors.join(', '))})` : ''));
-        renderPensionStatus();
-    }
-
-    function clearPension() {
-        if (!confirm('저장된 연금복권 당첨번호를 모두 지울까요?')) return;
-        store(KEY.pension).del();
-        pensionManual = [];
-        refreshPension();
-        $('pensionRecommendSection').style.display = 'none';
-        $('pensionCandidatesBox').style.display = 'none';
+        pensionNote = (p && p.status && p.status !== 'ok') ? String(p.message || '') : '';
         renderPensionStatus();
     }
 
     function renderPensionStatus() {
         if (!pension.length) {
-            setBox('pensionStatusBox', 'warn', '⚠️ 연금복권 당첨번호가 없습니다.' + (pensionAutoNote ? `<br><small>자동 연동: ${esc(pensionAutoNote)}</small>` : '') + '<br>아래 <b>📥 최신 당첨번호 추가 / 갱신</b>에서 최근 26회차를 입력해 주세요.');
-            $('pensionImportBox').open = true;
+            setBox('pensionStatusBox', 'error', '❌ 연금복권 당첨번호를 불러오지 못했습니다.' + (pensionNote ? `<br><small>${esc(pensionNote)}</small>` : '') + '<br>잠시 후 새로고침해 주세요.');
             return;
         }
         const win = pension.slice(0, CONFIG.WINDOW);
@@ -758,11 +647,12 @@
         const gaps = (latest - oldest + 1) - win.length;
         const exp = expectedDraw(PENSION_FIRST);
         const lag = exp - latest;
-        let msg = `${lag <= 0 && gaps === 0 && win.length >= CONFIG.WINDOW ? '✅' : '⚠️'} <b>${win.length}회차</b> (${oldest}~<b>${latest}회</b>) 기준 · ${pensionSource === 'auto' ? '🔄 자동 갱신' : '✍️ 수동 입력'}`;
         const warns = [];
-        if (lag > 0) warns.push(`예상 최신 회차는 <b>${exp}회</b>입니다. ${lag}개 회차를 추가로 입력해 주세요.`);
+        if (lag > 0) warns.push(`예상 최신 회차는 <b>${exp}회</b>입니다. 아직 갱신되지 않았을 수 있어요.`);
         if (gaps > 0) warns.push(`중간에 빠진 회차가 ${gaps}개 있습니다.`);
-        if (win.length < CONFIG.WINDOW) warns.push(`26회차보다 적게 저장되어 있습니다.`);
+        if (win.length < CONFIG.WINDOW) warns.push('26회차보다 적은 데이터입니다.');
+        if (pensionNote) warns.push('최근 자동 갱신에 문제가 있어 이전 데이터를 보여 줍니다.');
+        let msg = `${warns.length ? '⚠️' : '✅'} <b>${win.length}회차</b> (${oldest}~<b>${latest}회</b>) 기준 · 🔄 자동 갱신`;
         if (warns.length) msg += '<br>' + warns.join('<br>');
         setBox('pensionStatusBox', warns.length ? 'warn' : 'ok', msg);
     }
@@ -780,8 +670,7 @@
 
     function startPensionParsing() {
         if (pension.length < 10) {
-            setBox('pensionStatusBox', 'warn', '⚠️ 분석하려면 최소 10회차(권장 26회차) 이상의 당첨번호가 필요합니다. <b>📥 최신 당첨번호 추가 / 갱신</b>에서 입력해 주세요.');
-            $('pensionImportBox').open = true;
+            setBox('pensionStatusBox', 'warn', '⚠️ 분석에 필요한 당첨번호(최소 10회차)가 부족합니다. 잠시 후 새로고침해 주세요.');
             return;
         }
         const win = pension.slice(0, CONFIG.WINDOW);
@@ -838,14 +727,16 @@
     }
 
     // ==========================================
-    // 3. 스피또 (매일 바뀌는 수치 → 직접 입력, 가짜 샘플 데이터 제거)
+    // 3. 스피또 (매일 자동 갱신되는 data/lottery.json 사용, 열면 바로 표시)
     // ==========================================
     const SPEETTO_GAMES = [
         { key: 'speetto2000', title: '🎫 스피또 2000' },
         { key: 'speetto1000', title: '🏷️ 스피또 1000' },
         { key: 'speetto500', title: '🎟️ 스피또 500' }
     ];
-    let speetto = [];   // [{game, round, rate, totalFirst, remainFirst, totalSecond, remainSecond, savedAt}]
+    let speetto = [];           // [{game, round, rate, totalFirst, remainFirst, totalSecond, remainSecond, asOf}]
+    let speettoCheckedAt = 0;
+    let speettoNote = '';
 
     const validSpeettoRow = (r) => r && SPEETTO_GAMES.some(g => g.key === r.game) &&
         Number.isInteger(r.round) && r.round > 0 &&
@@ -853,89 +744,43 @@
         [r.totalFirst, r.remainFirst, r.totalSecond, r.remainSecond].every(v => Number.isInteger(v) && v >= 0) &&
         r.remainFirst <= r.totalFirst && r.remainSecond <= r.totalSecond;
 
-    let speettoManual = [], speettoAuto = [], speettoSource = 'manual', speettoAutoNote = '';
-    function refreshSpeetto() {
-        const useAuto = speettoAuto.length > 0;
-        speetto = useAuto ? speettoAuto : speettoManual;
-        speettoSource = useAuto ? 'auto' : 'manual';
-    }
     async function loadSpeetto() {
-        const d = store(KEY.speetto).get();
-        speettoManual = (d && Array.isArray(d.rows)) ? d.rows.filter(validSpeettoRow) : [];
         const auto = await loadAutoData();
         const sp = auto && auto.speetto;
-        const stamp = (sp && sp.checkedAt && Date.parse(sp.checkedAt + 'T07:00:00+09:00')) || (sp && Date.parse(sp.updatedAt || auto.generatedAt)) || Date.now();
-        speettoAuto = (sp && Array.isArray(sp.rows))
-            ? sp.rows.map(r => ({ game: r.game, round: Number(r.round), rate: Number(r.rate), totalFirst: Number(r.totalFirst), remainFirst: Number(r.remainFirst), totalSecond: Number(r.totalSecond), remainSecond: Number(r.remainSecond), savedAt: stamp, asOf: (typeof r.asOf === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.asOf)) ? r.asOf : '' })).filter(validSpeettoRow)
+        speettoCheckedAt = (sp && sp.checkedAt && Date.parse(sp.checkedAt + 'T07:00:00+09:00')) || (sp && Date.parse(sp.updatedAt || auto.generatedAt)) || 0;
+        speetto = (sp && Array.isArray(sp.rows))
+            ? sp.rows.map(r => ({
+                game: r.game, round: Number(r.round), rate: Number(r.rate),
+                totalFirst: Number(r.totalFirst), remainFirst: Number(r.remainFirst),
+                totalSecond: Number(r.totalSecond), remainSecond: Number(r.remainSecond),
+                asOf: (typeof r.asOf === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.asOf)) ? r.asOf : ''
+            })).filter(validSpeettoRow)
             : [];
-        speettoAutoNote = (sp && sp.status && sp.status !== 'ok') ? String(sp.message || '') : '';
-        refreshSpeetto();
-        renderSpeettoEntries();
-        renderSpeettoStatus();
-    }
-    function saveSpeetto() { store(KEY.speetto).set({ rows: speettoManual }); }
-
-    function addSpeettoEntry() {
-        const num = (id) => { const v = $(id).value.trim(); return v === '' ? NaN : Number(v); };
-        const row = {
-            game: $('spGame').value,
-            round: num('spRound'), rate: num('spRate'),
-            totalFirst: num('spTotalFirst'), remainFirst: num('spRemainFirst'),
-            totalSecond: num('spTotalSecond'), remainSecond: num('spRemainSecond'),
-            savedAt: Date.now()
-        };
-        if (!validSpeettoRow(row)) {
-            setBox('speettoImportMsg', 'error', '입력값을 확인해 주세요. 모든 칸을 채워야 하고, 판매점 입고율은 0~100, <b>잔여는 전체보다 클 수 없습니다.</b>');
-            return;
-        }
-        speettoManual = speettoManual.filter(r => !(r.game === row.game && r.round === row.round));
-        speettoManual.push(row);
-        saveSpeetto();
-        refreshSpeetto();
-        ['spRound', 'spRate', 'spTotalFirst', 'spRemainFirst', 'spTotalSecond', 'spRemainSecond'].forEach(id => $(id).value = '');
-        setBox('speettoImportMsg', 'ok', '✅ 저장했습니다.');
-        renderSpeettoEntries();
-        renderSpeettoStatus();
-    }
-
-    function deleteSpeettoEntry(game, round) {
-        speettoManual = speettoManual.filter(r => !(r.game === game && r.round === round));
-        saveSpeetto();
-        refreshSpeetto();
-        renderSpeettoEntries();
-        renderSpeettoStatus();
-    }
-
-    function renderSpeettoEntries() {
-        const box = $('speettoEntries');
-        if (!speetto.length) { box.innerHTML = ''; return; }
-        const title = (k) => SPEETTO_GAMES.find(g => g.key === k).title.replace(/^\S+\s/, '');
-        box.innerHTML = [...speetto].sort((a, b) => a.game.localeCompare(b.game) || b.round - a.round).map(r =>
-            `<div class="entry-row"><span>${esc(title(r.game))} ${r.round}회 · 판매점 입고율 ${r.rate}% · 1등 ${r.remainFirst}/${r.totalFirst}</span>` +
-            (speettoSource === 'manual' ? `<button class="btn-del" onclick="deleteSpeettoEntry('${r.game}', ${r.round})">삭제</button>` : '') + `</div>`).join('');
-    }
-
-    function renderSpeettoStatus() {
-        if (!speetto.length) {
-            setBox('speettoStatusBox', 'warn', '⚠️ 스피또 데이터가 없습니다.' + (speettoAutoNote ? `<br><small>자동 연동: ${esc(speettoAutoNote)}</small>` : '') + '<br>아래에서 현재 회차 수치를 입력해 주세요.');
-            return;
-        }
-        const newest = Math.max(...speetto.map(r => r.savedAt));
-        const hours = (Date.now() - newest) / 3600000;
-        const how = speettoSource === 'auto' ? '🔄 자동 갱신' : '✍️ 수동 입력';
-        const limit = speettoSource === 'auto' ? 36 : 24;
-        if (hours >= limit) setBox('speettoStatusBox', 'warn', `⚠️ ${how} · 마지막 갱신이 ${Math.floor(hours / 24)}일 전(${fmtTime(newest)})입니다. 판매점 입고율·잔여 수량은 매일 바뀌니 최신 수치인지 확인해 주세요.`);
-        else setBox('speettoStatusBox', 'ok', `✅ ${how} · ${fmtTime(newest)}`);
+        speettoNote = (sp && sp.status && sp.status !== 'ok') ? String(sp.message || '') : '';
+        analyzeSpeettoData();
     }
 
     function analyzeSpeettoData() {
-        if (!speetto.length) { renderSpeettoStatus(); $('speettoImportBox').open = true; return; }
-        renderSpeettoStatus();
+        const notes = ["판매점 입고율 90% 이상 & 1등 잔여 수량 1개 이상인 회차에 '추천'이 표시됩니다."];
+        if (speettoCheckedAt) {
+            const hours = (Date.now() - speettoCheckedAt) / 3600000;
+            notes.push(hours >= 36
+                ? `⚠️ 마지막 확인이 ${Math.floor(hours / 24)}일 전입니다. 오래된 데이터일 수 있어요.`
+                : `마지막 확인: ${new Date(speettoCheckedAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}`);
+        }
+        if (speettoNote) notes.push('⚠️ 최근 자동 갱신에 문제가 있어 이전 데이터를 보여 줍니다.');
+        $('speettoCaption').textContent = notes.join(' ');
+
+        const box = $('speettoContent');
+        if (!speetto.length) {
+            box.innerHTML = `<p class="note">스피또 데이터를 불러오지 못했습니다.${speettoNote ? '<br><small>' + esc(speettoNote) + '</small>' : ''}<br>잠시 후 새로고침해 주세요.</p>`;
+            return;
+        }
         let html = '';
         SPEETTO_GAMES.forEach(game => {
             const list = speetto.filter(r => r.game === game.key).sort((a, b) => b.round - a.round).slice(0, 2);
             html += `<div class="speetto-card-title">${game.title}</div>`;
-            if (!list.length) { html += `<p class="note">입력된 회차가 없습니다.</p>`; return; }
+            if (!list.length) { html += `<p class="note">판매 중인 회차가 없습니다.</p>`; return; }
             html += `<div class="speetto-table-wrapper"><table class="speetto-table">
                 <thead><tr><th>회차</th><th>판매점 입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
             list.forEach(item => {
@@ -950,8 +795,7 @@
             });
             html += `</tbody></table></div>`;
         });
-        $('speettoContent').innerHTML = html;
-        $('speettoResultsBox').style.display = 'block';
+        box.innerHTML = html;
     }
 
     // ==========================================
