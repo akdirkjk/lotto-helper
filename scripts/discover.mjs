@@ -1,59 +1,93 @@
-#!/usr/bin/env node
-// 동행복권 페이지가 내부적으로 부르는 데이터 주소(.do / API)를 찾아 로그로 출력합니다.
-// 한 번만 실행하는 진단용입니다. (페이지 HTML 과 거기 연결된 스크립트를 읽기만 합니다)
-const HOST = 'https://www.dhlottery.co.kr';
-const PAGES = [
-  ['연금복권 추첨결과', '/pt720/result'],
-  ['스피또2000 발행내역', '/st/pblcnDsctn?stGmTypeCd=st2000'],
-  ['스피또1000 발행내역', '/st/pblcnDsctn?stGmTypeCd=st1000'],
-  ['스피또500 발행내역', '/st/pblcnDsctn?stGmTypeCd=st500'],
-  ['로또 추첨결과 (비교용)', '/lt645/result']
-];
-const H = { 'user-agent': 'lottery-data-updater/1.0 (personal use)', accept: 'text/html,*/*' };
+// Diagnostic script: finds how the Pension / Speetto pages request their data (run by the Discover workflow)
+const HOST = process.env.HOST || 'https://www.dhlottery.co.kr';
+const UA = 'lottery-data-updater/1.0 (personal use)';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const squash = (s) => s.replace(/\s+/g, ' ');
 
-async function get(url) {
-  const res = await fetch(url, { headers: H, redirect: 'follow' });
+async function req(url, opt = {}) {
+  const res = await fetch(url, {
+    method: opt.method || 'GET',
+    body: opt.body,
+    redirect: 'follow',
+    headers: { 'user-agent': UA, accept: 'application/json, text/html, */*', ...(opt.headers || {}) }
+  });
   const text = await res.text();
-  return { status: res.status, finalUrl: res.url, text };
+  return { status: res.status, type: res.headers.get('content-type') || '', text };
 }
 
-const RE_DO = /["'`]((?:https?:\/\/[^"'`\s]+)?\/[A-Za-z0-9_\-\/]+\.do(?:\?[^"'`\s]*)?)["'`]/g;
-const RE_API = /["'`](\/(?:pt720|st|lt645|common|api)\/[A-Za-z0-9_\-\/]+(?:\?[^"'`\s]*)?)["'`]/g;
-function findEndpoints(text) {
-  const out = new Set();
-  for (const re of [RE_DO, RE_API]) for (const m of text.matchAll(re)) out.add(m[1]);
-  return out;
+const NEEDLES = [
+  'selectPstPt720Info.do', 'selectPstPt720WnList.do', 'selectPstPt720WnInfo.do',
+  'selectPt720WnResult.do', 'selectPblcnDsctn.do'
+];
+
+function contexts(label, text) {
+  for (const n of NEEDLES) {
+    let from = 0, shown = 0;
+    while (shown < 2) {
+      const i = text.indexOf(n, from);
+      if (i < 0) break;
+      console.log('\n--- [' + label + '] code around ' + n + ' (offset ' + i + ')');
+      console.log(squash(text.slice(Math.max(0, i - 700), i + 900)));
+      from = i + n.length;
+      shown++;
+    }
+  }
 }
 
-const seen = new Map();   // 주소 -> 어디서 발견했는지
+const PAGES = [
+  ['pension page', '/pt720/result'],
+  ['speetto page', '/st/pblcnDsctn?stGmTypeCd=st2000']
+];
 for (const [label, path] of PAGES) {
-  console.log(`\n===== ${label}  ${HOST}${path}`);
+  console.log('\n===== PAGE ' + label + ' ' + HOST + path);
   try {
-    const page = await get(HOST + path);
-    console.log(`상태 ${page.status}, ${page.text.length.toLocaleString()}바이트, 최종 주소 ${page.finalUrl}`);
-    if (page.status !== 200) { console.log('→ 정상 응답이 아닙니다. (접속 제한일 수 있음)'); continue; }
-    findEndpoints(page.text).forEach((e) => { if (!seen.has(e)) seen.set(e, `${label} (HTML)`); });
-
+    const page = await req(HOST + path);
+    console.log('status ' + page.status + ', ' + page.text.length + ' bytes');
+    contexts(label + ' html', page.text);
     const srcs = [...page.text.matchAll(/<script[^>]+src=["']([^"']+)["']/g)]
-      .map((m) => new URL(m[1], page.finalUrl).href)
-      .filter((u) => u.startsWith(HOST) && !/jquery|bootstrap|\.min\.js.*(slick|swiper)/i.test(u))
-      .slice(0, 20);
+      .map((m) => new URL(m[1], HOST + path).href)
+      .filter((u) => u.startsWith(HOST))
+      .slice(0, 25);
     for (const u of srcs) {
-      await sleep(300);                                   // 서버에 부담을 주지 않도록 천천히
+      await sleep(300);
       try {
-        const js = await get(u);
-        if (js.status !== 200 || js.text.length > 3_000_000) continue;
-        findEndpoints(js.text).forEach((e) => { if (!seen.has(e)) seen.set(e, `${label} → ${u.replace(HOST, '')}`); });
-      } catch { /* 무시 */ }
+        const js = await req(u);
+        if (js.status === 200) contexts(label + ' js ' + u.replace(HOST, ''), js.text);
+      } catch (e) { /* ignore */ }
     }
   } catch (e) {
-    console.log('요청 실패:', e.message);
+    console.log('request failed: ' + e.message);
   }
   await sleep(500);
 }
 
-const interesting = [...seen].filter(([e]) => /pt720|\/st\/|lt645|Epsd|Pblcn|select|Info|result/i.test(e));
-console.log(`\n\n===== 발견된 후보 주소 (${interesting.length}개 / 전체 ${seen.size}개) =====`);
-for (const [e, where] of interesting.slice(0, 200)) console.log(`${e}\n    ↳ ${where}`);
-if (!seen.size) console.log('발견된 주소가 없습니다. 접속이 제한되었거나, 페이지가 다른 방식으로 데이터를 불러올 수 있습니다.');
+const XHR = { 'x-requested-with': 'XMLHttpRequest' };
+const PEN = { ...XHR, referer: HOST + '/pt720/result' };
+const SPT = { ...XHR, referer: HOST + '/st/pblcnDsctn?stGmTypeCd=st2000' };
+const TRIES = [
+  ['GET', '/pt720/selectPstPt720Info.do', PEN],
+  ['GET', '/pt720/selectPstPt720Info.do?srchPsltEpsd=all', PEN],
+  ['GET', '/pt720/selectPstPt720Info.do?srchPsltEpsd=339', PEN],
+  ['GET', '/pt720/selectPstPt720WnList.do?srchPsltEpsd=339', PEN],
+  ['GET', '/pt720/selectPstPt720WnInfo.do?srchPsltEpsd=339', PEN],
+  ['GET', '/pt720/selectPt720WnResult.do?srchPsltEpsd=339', PEN],
+  ['GET', '/st/selectPblcnDsctn.do?stGmTypeCd=st2000', SPT],
+  ['GET', '/st/selectPblcnDsctn.do?srchStGmTypeCd=st2000', SPT],
+  ['POST', '/st/selectPblcnDsctn.do', SPT, 'stGmTypeCd=st2000']
+];
+console.log('\n\n===== DIRECT CALLS =====');
+for (const [method, path, headers, body] of TRIES) {
+  await sleep(700);
+  console.log('\n>>> ' + method + ' ' + path + (body ? '  body=' + body : ''));
+  try {
+    const r = await req(HOST + path, {
+      method, body,
+      headers: body ? { ...headers, 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8' } : headers
+    });
+    console.log('status ' + r.status + ' | ' + r.type + ' | ' + r.text.length + ' bytes');
+    console.log(squash(r.text).slice(0, 900));
+  } catch (e) {
+    console.log('request failed: ' + e.message);
+  }
+}
+console.log('\n===== DONE =====');
