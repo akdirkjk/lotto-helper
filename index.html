@@ -360,7 +360,7 @@
 
 <p class="note footer-note">
     ※ 본 도구는 과거 번호를 단순 집계하는 <strong>참고·재미용</strong>입니다. 추첨은 매 회 독립적이므로 어떤 조합도 당첨 확률은 같습니다.<br>
-    ※ 스피또의 판매점 입고율은 판매점에 입고된 비율이며, 소비자에게 실제로 팔린 비율은 아닙니다.<br>
+    ※ 스피또의 입고율은 판매점에 입고된 비율이며, 소비자에게 실제로 팔린 비율은 아닙니다.<br>
     ※ 로또 데이터: 동행복권 공개 조회(매일 자동 갱신) 및 비공식 JSON(smok95/lotto). 오류가 있을 수 있으니 정확한 결과는 동행복권에서 확인하세요.
 </p>
 
@@ -782,7 +782,7 @@
             html += `<div class="speetto-card-title">${game.title}</div>`;
             if (!list.length) { html += `<p class="note">판매 중인 회차가 없습니다.</p>`; return; }
             html += `<div class="speetto-table-wrapper"><table class="speetto-table">
-                <thead><tr><th>회차</th><th>판매점 입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
+                <thead><tr><th>회차</th><th>입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
             list.forEach(item => {
                 const rec = item.rate >= 90 && item.remainFirst >= 1;
                 html += `<tr>
