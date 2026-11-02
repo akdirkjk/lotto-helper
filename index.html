@@ -190,7 +190,7 @@
 
         /* 테이블 너비 비율 지정 */
         .speetto-table th:nth-child(1), .speetto-table td:nth-child(1) { width: 17%; } /* 회차 */
-        .speetto-table th:nth-child(2), .speetto-table td:nth-child(2) { width: 17%; } /* 출고율 */
+        .speetto-table th:nth-child(2), .speetto-table td:nth-child(2) { width: 17%; } /* 판매점 입고율 */
         .speetto-table th:nth-child(3), .speetto-table td:nth-child(3) { width: 25%; } /* 1등 잔여 */
         .speetto-table th:nth-child(4), .speetto-table td:nth-child(4) { width: 25%; } /* 2등 잔여 */
         .speetto-table th:nth-child(5), .speetto-table td:nth-child(5) { width: 16%; } /* 추천 */
@@ -366,12 +366,13 @@
 <!-- ==================== 3. 스피또 탭 ==================== -->
 <div id="speettoTab" class="tab-content">
     <div class="card">
-        <h1>🎫 스피또 출고율 및 구매 회차 추천</h1>
+        <h1>🎫 스피또 판매점 입고율 및 구매 회차 추천</h1>
         <p class="desc">
-            스피또 500, 1000, 2000의 최근 2개 회차 중 <strong>출고율 90% 이상 & 1등 잔여 수량 1개 이상</strong> 조건을 만족하는 회차를 추천합니다.
+            스피또 500, 1000, 2000의 최근 2개 회차 중 <strong>판매점 입고율 90% 이상 & 1등 잔여 수량 1개 이상</strong> 조건을 만족하는 회차를 추천합니다.
         </p>
         <p class="note" style="margin-top:-6px;">
-            ⚠️ 출고율·잔여 수량은 <strong>매일 바뀌는 수치</strong>이고 자동 조회가 불가능합니다. 동행복권 사이트(즉석식 복권 → 스피또 → 발행내역)에서 확인한 현재 수치를 아래에 입력해 주세요.
+            동행복권 <strong>발행내역</strong>의 "판매점 입고율"과 1등·2등 잔여수량을 매일 자동으로 가져옵니다(판매중인 회차 기준). 자동으로 가져오지 못할 때만 아래에 직접 입력할 수 있어요.<br>
+            ※ 판매점 입고율은 판매점에 <strong>입고된 비율</strong>이며 소비자에게 실제로 팔린 비율은 아닙니다. 각 수치의 기준일은 표에 함께 표시됩니다.
         </p>
         <div id="speettoStatusBox" class="status-box info" role="status" aria-live="polite" style="display:block;">입력된 데이터를 확인하는 중...</div>
 
@@ -388,7 +389,7 @@
                 <label>회차
                     <input id="spRound" type="number" inputmode="numeric" min="1" placeholder="예: 56">
                 </label>
-                <label>출고율 (%)
+                <label>판매점 입고율 (%)
                     <input id="spRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" placeholder="예: 92">
                 </label>
                 <span></span>
@@ -863,9 +864,9 @@
         speettoManual = (d && Array.isArray(d.rows)) ? d.rows.filter(validSpeettoRow) : [];
         const auto = await loadAutoData();
         const sp = auto && auto.speetto;
-        const stamp = (sp && Date.parse(sp.updatedAt || auto.generatedAt)) || Date.now();
+        const stamp = (sp && sp.checkedAt && Date.parse(sp.checkedAt + 'T07:00:00+09:00')) || (sp && Date.parse(sp.updatedAt || auto.generatedAt)) || Date.now();
         speettoAuto = (sp && Array.isArray(sp.rows))
-            ? sp.rows.map(r => ({ game: r.game, round: Number(r.round), rate: Number(r.rate), totalFirst: Number(r.totalFirst), remainFirst: Number(r.remainFirst), totalSecond: Number(r.totalSecond), remainSecond: Number(r.remainSecond), savedAt: stamp })).filter(validSpeettoRow)
+            ? sp.rows.map(r => ({ game: r.game, round: Number(r.round), rate: Number(r.rate), totalFirst: Number(r.totalFirst), remainFirst: Number(r.remainFirst), totalSecond: Number(r.totalSecond), remainSecond: Number(r.remainSecond), savedAt: stamp, asOf: (typeof r.asOf === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.asOf)) ? r.asOf : '' })).filter(validSpeettoRow)
             : [];
         speettoAutoNote = (sp && sp.status && sp.status !== 'ok') ? String(sp.message || '') : '';
         refreshSpeetto();
@@ -884,7 +885,7 @@
             savedAt: Date.now()
         };
         if (!validSpeettoRow(row)) {
-            setBox('speettoImportMsg', 'error', '입력값을 확인해 주세요. 모든 칸을 채워야 하고, 출고율은 0~100, <b>잔여는 전체보다 클 수 없습니다.</b>');
+            setBox('speettoImportMsg', 'error', '입력값을 확인해 주세요. 모든 칸을 채워야 하고, 판매점 입고율은 0~100, <b>잔여는 전체보다 클 수 없습니다.</b>');
             return;
         }
         speettoManual = speettoManual.filter(r => !(r.game === row.game && r.round === row.round));
@@ -910,7 +911,7 @@
         if (!speetto.length) { box.innerHTML = ''; return; }
         const title = (k) => SPEETTO_GAMES.find(g => g.key === k).title.replace(/^\S+\s/, '');
         box.innerHTML = [...speetto].sort((a, b) => a.game.localeCompare(b.game) || b.round - a.round).map(r =>
-            `<div class="entry-row"><span>${esc(title(r.game))} ${r.round}회 · 출고율 ${r.rate}% · 1등 ${r.remainFirst}/${r.totalFirst}</span>` +
+            `<div class="entry-row"><span>${esc(title(r.game))} ${r.round}회 · 판매점 입고율 ${r.rate}% · 1등 ${r.remainFirst}/${r.totalFirst}</span>` +
             (speettoSource === 'manual' ? `<button class="btn-del" onclick="deleteSpeettoEntry('${r.game}', ${r.round})">삭제</button>` : '') + `</div>`).join('');
     }
 
@@ -922,7 +923,8 @@
         const newest = Math.max(...speetto.map(r => r.savedAt));
         const hours = (Date.now() - newest) / 3600000;
         const how = speettoSource === 'auto' ? '🔄 자동 갱신' : '✍️ 수동 입력';
-        if (hours >= 24) setBox('speettoStatusBox', 'warn', `⚠️ ${how} · 마지막 갱신이 ${Math.floor(hours / 24)}일 전(${fmtTime(newest)})입니다. 출고율·잔여 수량은 매일 바뀌니 최신 수치인지 확인해 주세요.`);
+        const limit = speettoSource === 'auto' ? 36 : 24;
+        if (hours >= limit) setBox('speettoStatusBox', 'warn', `⚠️ ${how} · 마지막 갱신이 ${Math.floor(hours / 24)}일 전(${fmtTime(newest)})입니다. 판매점 입고율·잔여 수량은 매일 바뀌니 최신 수치인지 확인해 주세요.`);
         else setBox('speettoStatusBox', 'ok', `✅ ${how} · ${fmtTime(newest)}`);
     }
 
@@ -935,11 +937,11 @@
             html += `<div class="speetto-card-title">${game.title}</div>`;
             if (!list.length) { html += `<p class="note">입력된 회차가 없습니다.</p>`; return; }
             html += `<div class="speetto-table-wrapper"><table class="speetto-table">
-                <thead><tr><th>회차</th><th>출고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
+                <thead><tr><th>회차</th><th>판매점 입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
             list.forEach(item => {
                 const rec = item.rate >= 90 && item.remainFirst >= 1;
                 html += `<tr>
-                    <td><strong>${item.round}회</strong></td>
+                    <td><strong>${item.round}회</strong>${item.asOf ? `<br><small style="color:#6b7280">${esc(item.asOf.slice(5))} 기준</small>` : ''}</td>
                     <td>${item.rate}%</td>
                     <td><strong>${item.remainFirst}</strong> / ${item.totalFirst}매</td>
                     <td><strong>${item.remainSecond}</strong> / ${item.totalSecond}매</td>
