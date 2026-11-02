@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-02T11:29:24.095Z",
+ "generatedAt": "2026-11-02T11:36:33.017Z",
  "lotto": {
   "latest": 1248,
   "source": "official",
@@ -1576,7 +1576,7 @@
  },
  "speetto": {
   "status": "error",
-  "message": "speetto2000: 2 item(s) have an unexpected format",
+  "message": "speetto2000: 2 item(s) have an unexpected format (e.g. stEpsd=\"70\" stSpmtRt=\"39\" stRnk1Rt=\"8매/8매\" stRnk2Rt=\"21매/24매\")",
   "rows": []
  }
 }
