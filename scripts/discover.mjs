@@ -1,4 +1,4 @@
-// Diagnostic script: finds how the Pension / Speetto pages request their data (run by the Discover workflow)
+// Diagnostic v2: shows how the Speetto page requests and renders its data (run by the Discover workflow)
 const HOST = process.env.HOST || 'https://www.dhlottery.co.kr';
 const UA = 'lottery-data-updater/1.0 (personal use)';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -6,8 +6,6 @@ const squash = (s) => s.replace(/\s+/g, ' ');
 
 async function req(url, opt = {}) {
   const res = await fetch(url, {
-    method: opt.method || 'GET',
-    body: opt.body,
     redirect: 'follow',
     headers: { 'user-agent': UA, accept: 'application/json, text/html, */*', ...(opt.headers || {}) }
   });
@@ -15,77 +13,77 @@ async function req(url, opt = {}) {
   return { status: res.status, type: res.headers.get('content-type') || '', text };
 }
 
-const NEEDLES = [
-  'selectPstPt720Info.do', 'selectPstPt720WnList.do', 'selectPstPt720WnInfo.do',
-  'selectPt720WnResult.do', 'selectPblcnDsctn.do'
-];
+const PAGE = '/st/pblcnDsctn?stGmTypeCd=st2000';
+console.log('\n===== SPEETTO PAGE ' + HOST + PAGE);
+const page = await req(HOST + PAGE);
+const html = page.text;
+console.log('status ' + page.status + ', ' + html.length + ' bytes');
 
-function contexts(label, text) {
-  for (const n of NEEDLES) {
-    let from = 0, shown = 0;
-    while (shown < 2) {
-      const i = text.indexOf(n, from);
-      if (i < 0) break;
-      console.log('\n--- [' + label + '] code around ' + n + ' (offset ' + i + ')');
-      console.log(squash(text.slice(Math.max(0, i - 700), i + 900)));
-      from = i + n.length;
-      shown++;
-    }
-  }
-}
+// 1) the code that builds the table (shows which fields hold the numbers)
+const m1 = /fn_handleTable\s*:\s*function/.exec(html);
+console.log('\n--- [1] table building code');
+console.log(m1 ? squash(html.slice(m1.index, m1.index + 7000)) : 'not found');
 
-const PAGES = [
-  ['pension page', '/pt720/result'],
-  ['speetto page', '/st/pblcnDsctn?stGmTypeCd=st2000']
-];
-for (const [label, path] of PAGES) {
-  console.log('\n===== PAGE ' + label + ' ' + HOST + path);
+// 2) filter buttons (gdsType / gdsPrice / gdsStatus) and their values
+console.log('\n--- [2] filter buttons');
+const tags = [...html.matchAll(/<[a-z]+[^>]*class="[^"]*(?:gdsType|gdsPrice|gdsStatus)[^"]*"[^>]*>/gi)];
+for (const t of tags.slice(0, 40)) console.log(squash(html.slice(t.index, t.index + t[0].length + 60)));
+if (!tags.length) console.log('no matching tags');
+
+// 3) how the shared request helper sends GET parameters (array encoding etc.)
+console.log('\n--- [3] request helper (sendHttpJson)');
+const srcs = [...html.matchAll(/<script[^>]+src=["']([^"']+)["']/g)]
+  .map((m) => new URL(m[1], HOST + PAGE).href)
+  .filter((u) => u.startsWith(HOST))
+  .slice(0, 30);
+const blobs = [['page html', html]];
+for (const u of srcs) {
+  await sleep(250);
   try {
-    const page = await req(HOST + path);
-    console.log('status ' + page.status + ', ' + page.text.length + ' bytes');
-    contexts(label + ' html', page.text);
-    const srcs = [...page.text.matchAll(/<script[^>]+src=["']([^"']+)["']/g)]
-      .map((m) => new URL(m[1], HOST + path).href)
-      .filter((u) => u.startsWith(HOST))
-      .slice(0, 25);
-    for (const u of srcs) {
-      await sleep(300);
-      try {
-        const js = await req(u);
-        if (js.status === 200) contexts(label + ' js ' + u.replace(HOST, ''), js.text);
-      } catch (e) { /* ignore */ }
-    }
-  } catch (e) {
-    console.log('request failed: ' + e.message);
-  }
-  await sleep(500);
+    const js = await req(u);
+    if (js.status === 200) blobs.push([u.replace(HOST, ''), js.text]);
+  } catch (e) { /* ignore */ }
 }
+let found = false;
+for (const [label, text] of blobs) {
+  const m = /sendHttpJson\s*[:=]\s*(?:async\s*)?function\s*\([^)]*\)\s*\{/.exec(text) || /function\s+sendHttpJson\s*\([^)]*\)\s*\{/.exec(text);
+  if (m) {
+    console.log('found in ' + label);
+    console.log(squash(text.slice(m.index, m.index + 2500)));
+    found = true;
+    break;
+  }
+}
+if (!found) console.log('definition not found in ' + blobs.length + ' files');
 
-const XHR = { 'x-requested-with': 'XMLHttpRequest' };
-const PEN = { ...XHR, referer: HOST + '/pt720/result' };
-const SPT = { ...XHR, referer: HOST + '/st/pblcnDsctn?stGmTypeCd=st2000' };
-const TRIES = [
-  ['GET', '/pt720/selectPstPt720Info.do', PEN],
-  ['GET', '/pt720/selectPstPt720Info.do?srchPsltEpsd=all', PEN],
-  ['GET', '/pt720/selectPstPt720Info.do?srchPsltEpsd=339', PEN],
-  ['GET', '/pt720/selectPstPt720WnList.do?srchPsltEpsd=339', PEN],
-  ['GET', '/pt720/selectPstPt720WnInfo.do?srchPsltEpsd=339', PEN],
-  ['GET', '/pt720/selectPt720WnResult.do?srchPsltEpsd=339', PEN],
-  ['GET', '/st/selectPblcnDsctn.do?stGmTypeCd=st2000', SPT],
-  ['GET', '/st/selectPblcnDsctn.do?srchStGmTypeCd=st2000', SPT],
-  ['POST', '/st/selectPblcnDsctn.do', SPT, 'stGmTypeCd=st2000']
+// 4) direct calls with different parameter styles
+const H = { 'x-requested-with': 'XMLHttpRequest', referer: HOST + PAGE };
+const base = 'pageNum=1&recordCountPerPage=8';
+const VARIANTS = [
+  ['no filters', base],
+  ['gdsType=SP2000', 'gdsType=SP2000&' + base],
+  ['gdsType=st2000', 'gdsType=st2000&' + base],
+  ['gdsType[]=SP2000', 'gdsType%5B%5D=SP2000&' + base],
+  ['guess all three', 'gdsType=SP2000&gdsPrice=2000&gdsStatus=ING&' + base]
 ];
 console.log('\n\n===== DIRECT CALLS =====');
-for (const [method, path, headers, body] of TRIES) {
+for (const [label, qs] of VARIANTS) {
   await sleep(700);
-  console.log('\n>>> ' + method + ' ' + path + (body ? '  body=' + body : ''));
+  console.log('\n>>> ' + label + '  GET /st/selectPblcnDsctn.do?' + qs);
   try {
-    const r = await req(HOST + path, {
-      method, body,
-      headers: body ? { ...headers, 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8' } : headers
-    });
+    const r = await req(HOST + '/st/selectPblcnDsctn.do?' + qs, { headers: H });
     console.log('status ' + r.status + ' | ' + r.type + ' | ' + r.text.length + ' bytes');
-    console.log(squash(r.text).slice(0, 900));
+    let j = null;
+    try { j = JSON.parse(r.text); } catch (e) { /* not json */ }
+    if (j && j.data && Array.isArray(j.data.list)) {
+      console.log('total=' + j.data.total + ' list.length=' + j.data.list.length);
+      console.log('LIST ITEM 0: ' + JSON.stringify(j.data.list[0]));
+      console.log('LIST ITEM 1: ' + JSON.stringify(j.data.list[1]));
+      const rd = j.data.stRnkDate;
+      console.log('stRnkDate length=' + (rd ? rd.length : 'none') + ' ITEM 0: ' + JSON.stringify(rd && rd[0]));
+    } else {
+      console.log(squash(r.text).slice(0, 700));
+    }
   } catch (e) {
     console.log('request failed: ' + e.message);
   }
