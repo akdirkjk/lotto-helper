@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-04T01:52:16.892Z",
+ "generatedAt": "2026-11-05T01:58:24.837Z",
  "lotto": {
   "latest": 1248,
   "source": "official",
@@ -1577,7 +1577,7 @@
  "speetto": {
   "status": "ok",
   "source": "official",
-  "checkedAt": "2026-11-04",
+  "checkedAt": "2026-11-05",
   "rows": [
    {
     "game": "speetto2000",
