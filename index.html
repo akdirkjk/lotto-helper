@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <!-- 확대/축소를 막지 않음 (접근성) -->입
+    <!-- 확대/축소를 막지 않음 (접근성) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- 보안: 외부 스크립트/이미지/프레임 차단, 네트워크 요청은 로또 데이터 서버 1곳만 허용 -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self' https://smok95.github.io; base-uri 'none'; form-action 'none'">
@@ -190,7 +190,7 @@
 
         /* 테이블 너비 비율 지정 */
         .speetto-table th:nth-child(1), .speetto-table td:nth-child(1) { width: 17%; } /* 회차 */
-        .speetto-table th:nth-child(2), .speetto-table td:nth-child(2) { width: 17%; } /* 입고율 */
+        .speetto-table th:nth-child(2), .speetto-table td:nth-child(2) { width: 17%; } /* 판매점 입고율 */
         .speetto-table th:nth-child(3), .speetto-table td:nth-child(3) { width: 25%; } /* 1등 잔여 */
         .speetto-table th:nth-child(4), .speetto-table td:nth-child(4) { width: 25%; } /* 2등 잔여 */
         .speetto-table th:nth-child(5), .speetto-table td:nth-child(5) { width: 16%; } /* 추천 */
@@ -274,7 +274,6 @@
         .game-label { font-weight: bold; color: #555; flex-shrink: 0; }
         .note { font-size: 0.75rem; color: #6b7280; line-height: 1.6; margin-top: 10px; }
         .footer-note { text-align: center; margin: 8px 0 24px; }
-        code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: 0.78rem; }
 
         .status-box.ok { background-color: #ecfdf5; color: #065f46; }
         .status-box.warn { background-color: #fffbeb; color: #92400e; }
@@ -282,16 +281,15 @@
         .status-box.info { background-color: #eff6ff; color: #1e40af; }
         .status-box { word-break: keep-all; line-height: 1.6; }
         .btn-main:disabled, .btn-sub:disabled { opacity: 0.55; cursor: not-allowed; }
-
-        details.import { margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; background: #fafafa; }
-        details.import summary { cursor: pointer; font-weight: bold; font-size: 0.88rem; color: #374151; }
-        details.import textarea { width: 100%; min-height: 96px; margin-top: 8px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; font-size: 0.82rem; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
-        .form-grid label { font-size: 0.75rem; color: #4b5563; display: flex; flex-direction: column; gap: 3px; }
-        .form-grid input, .form-grid select { padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; font-size: 0.85rem; width: 100%; background: #fff; }
-        .entry-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; font-size: 0.8rem; }
-        .btn-del { border: none; background: #fee2e2; color: #991b1b; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem; flex-shrink: 0; }
         .speetto-table-wrapper { overflow-x: auto; }
+        /* ===== 데이터 업데이트 바 ===== */
+        .update-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: -6px 0 14px; padding: 8px 12px; background: #fff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); font-size: 0.78rem; line-height: 1.5; }
+        .update-status { color: #4b5563; word-break: keep-all; }
+        .update-status.ok { color: #065f46; }
+        .update-status.warn { color: #92400e; }
+        .update-status.error { color: #991b1b; }
+        .btn-update { flex-shrink: 0; border: 1px solid #d1d5db; background: #f9fafb; color: #374151; border-radius: 999px; padding: 6px 12px; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
+        .btn-update:disabled { opacity: 0.6; cursor: wait; }
         button:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
     </style>
 </head>
@@ -304,6 +302,12 @@
     <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('speettoTab', this)">🎫 스피또</button>
 </div>
 
+<!-- 데이터 업데이트 박스 -->
+<div class="update-bar">
+    <span id="updateStatus" class="update-status" role="status" aria-live="polite">데이터를 불러오는 중...</span>
+    <button id="updateBtn" class="btn-update" type="button" onclick="refreshAll('manual')">🔄 지금 업데이트</button>
+</div>
+
 <!-- ==================== 1. 로또 탭 ==================== -->
 <div id="lottoTab" class="tab-content active">
     <div class="card">
@@ -313,7 +317,6 @@
         </p>
         <div id="lottoStatusBox" class="status-box info" role="status" aria-live="polite" style="display:block;">⏳ 최신 회차를 확인하는 중...</div>
         <button class="btn-main" style="margin-top:12px;" onclick="startLottoParsing()">⚡ 번호 추출 및 분석 시작</button>
-        <button class="btn-sub" onclick="loadLottoData(true)">🔄 최신 데이터 다시 불러오기</button>
         <button class="btn-sub" onclick="toggleLottoHistory()">📜 최근 26회차 당첨번호 전체 보기</button>
 
         <div id="lottoCandidatesBox" class="candidates-box"></div>
@@ -360,7 +363,7 @@
 
 <p class="note footer-note">
     ※ 본 도구는 과거 번호를 단순 집계하는 <strong>참고·재미용</strong>입니다. 추첨은 매 회 독립적이므로 어떤 조합도 당첨 확률은 같습니다.<br>
-    ※ 스피또의 입고율은 판매점에 입고된 비율이며, 소비자에게 실제로 팔린 비율은 아닙니다.<br>
+    ※ 스피또의 판매점 입고율은 판매점에 입고된 비율이며, 소비자에게 실제로 팔린 비율은 아닙니다.<br>
     ※ 로또 데이터: 동행복권 공개 조회(매일 자동 갱신) 및 비공식 JSON(smok95/lotto). 오류가 있을 수 있으니 정확한 결과는 동행복권에서 확인하세요.
 </p>
 
@@ -523,6 +526,8 @@
 
             if (cands.length) {
                 lotto = cands[0];
+            } else if (lotto) {
+                lotto = { ...lotto, source: 'cache' };   // 화면에 있던 데이터를 유지하되 "최신이 아님"으로 표시
             } else {
                 const sorted = cached.sort((a, b) => b.draw - a.draw).slice(0, CONFIG.WINDOW);
                 lotto = sorted.length ? { draws: sorted, source: 'cache', fetchedAt: (cache && cache.fetchedAt) || 0 } : null;
@@ -629,6 +634,7 @@
 
     async function loadPension() {
         const auto = await loadAutoData();
+        if (!auto && pension.length) { renderPensionStatus(); return; }   // 업데이트 실패 시 화면의 데이터 유지
         const p = auto && auto.pension;
         pension = (p && Array.isArray(p.draws))
             ? p.draws.map(r => ({ draw: Number(r.draw), group: Number(r.group), numbers: (Array.isArray(r.numbers) ? r.numbers : []).map(Number) })).filter(validPensionRow).sort((a, b) => b.draw - a.draw)
@@ -746,6 +752,7 @@
 
     async function loadSpeetto() {
         const auto = await loadAutoData();
+        if (!auto && speetto.length) { analyzeSpeettoData(); return; }   // 업데이트 실패 시 화면의 데이터 유지
         const sp = auto && auto.speetto;
         speettoCheckedAt = (sp && sp.checkedAt && Date.parse(sp.checkedAt + 'T07:00:00+09:00')) || (sp && Date.parse(sp.updatedAt || auto.generatedAt)) || 0;
         speetto = (sp && Array.isArray(sp.rows))
@@ -782,7 +789,7 @@
             html += `<div class="speetto-card-title">${game.title}</div>`;
             if (!list.length) { html += `<p class="note">판매 중인 회차가 없습니다.</p>`; return; }
             html += `<div class="speetto-table-wrapper"><table class="speetto-table">
-                <thead><tr><th>회차</th><th>입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
+                <thead><tr><th>회차</th><th>판매점 입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
             list.forEach(item => {
                 const rec = item.rate >= 90 && item.remainFirst >= 1;
                 html += `<tr>
@@ -799,11 +806,93 @@
     }
 
     // ==========================================
-    // 시작: 열 때마다 로또 최신 회차를 자동으로 불러옴
+    // 데이터 업데이트: 수동 버튼 + 화면이 다시 보일 때 마지막 성공 후 30분이 지났으면 자동
     // ==========================================
-    loadPension();
-    loadSpeetto();
-    loadLottoData();
+    const REFRESH = { STALE_MS: 30 * 60 * 1000, THROTTLE_MS: 60 * 1000, POLL_MS: 10 * 60 * 1000 };
+    let lastOkAt = 0, lastTryAt = 0, refreshing = null;
+
+    function snapshot() {
+        return {
+            lotto: lotto && lotto.draws[0] ? lotto.draws[0].draw : 0,
+            pension: pension.length ? pension[0].draw : 0,
+            speetto: JSON.stringify(speetto)
+        };
+    }
+
+    function setUpdateStatus(kind, html) {
+        const el = $('updateStatus');
+        el.className = 'update-status ' + kind;
+        el.innerHTML = html;
+    }
+
+    // 새 데이터가 들어오면 이전 데이터로 만든 분석·추천 결과는 숨김 (다시 분석하도록)
+    function resetResults() {
+        ['lottoRecommendSection', 'lottoCandidatesBox', 'lottoHistoryBox', 'pensionRecommendSection', 'pensionCandidatesBox', 'pensionHistoryBox']
+            .forEach(id => { $(id).style.display = 'none'; });
+    }
+
+    function refreshAll(reason) {
+        if (refreshing) return refreshing;
+        refreshing = (async () => {
+            const btn = $('updateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 업데이트 중...';
+            lastTryAt = Date.now();
+            const before = snapshot();
+            const hadData = !!(before.lotto || before.pension || before.speetto !== '[]');
+            try {
+                await loadLottoData(true);                        // 자동 파일(data/lottery.json)도 이때 함께 다시 읽음
+                await Promise.all([loadPension(), loadSpeetto()]);
+                const auto = await loadAutoData();
+                const fetched = !!auto || !!(lotto && lotto.source === 'live');
+                const after = snapshot();
+                const changed = [];
+                if (after.lotto !== before.lotto) changed.push(`로또 ${after.lotto}회`);
+                if (after.pension !== before.pension) changed.push(`연금복권 ${after.pension}회`);
+                if (after.speetto !== before.speetto) changed.push('스피또');
+                const time = fmtTime(Date.now());
+                if (!fetched) {
+                    setUpdateStatus('warn', hadData
+                        ? `⚠️ 업데이트에 실패해 이전 데이터를 표시 중이에요 (${time})`
+                        : `⚠️ 데이터를 불러오지 못했어요. 🔄 버튼으로 다시 시도해 주세요.`);
+                } else {
+                    lastOkAt = Date.now();
+                    if (reason === 'init') {
+                        setUpdateStatus('ok', `✅ 최신 데이터를 불러왔어요 · ${time}`);
+                    } else if (changed.length) {
+                        resetResults();
+                        setUpdateStatus('ok', `✅ 새 데이터를 반영했어요 (${changed.join(', ')}) · ${time}<br><small>이전 추천 결과는 초기화되었어요. 다시 분석해 주세요.</small>`);
+                    } else {
+                        setUpdateStatus('ok', `✅ 이미 최신이에요 · ${time} 확인`);
+                    }
+                }
+            } catch (e) {
+                setUpdateStatus('error', '❌ 업데이트 중 오류가 발생했어요. 잠시 후 다시 눌러 주세요.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 지금 업데이트';
+                refreshing = null;
+            }
+        })();
+        return refreshing;
+    }
+
+    // 화면이 다시 보일 때(탭 전환, 앱 복귀, 뒤로가기 복원, 네트워크 복구) 오래됐으면 자동 업데이트
+    function maybeRefresh() {
+        if (document.visibilityState && document.visibilityState !== 'visible') return;
+        const now = Date.now();
+        if (refreshing || now - lastTryAt < REFRESH.THROTTLE_MS) return;   // 연속 호출 방지
+        if (now - lastOkAt >= REFRESH.STALE_MS) refreshAll('auto');
+    }
+    document.addEventListener('visibilitychange', maybeRefresh);
+    window.addEventListener('pageshow', (e) => { if (e.persisted) maybeRefresh(); });
+    window.addEventListener('online', maybeRefresh);
+    setInterval(maybeRefresh, REFRESH.POLL_MS);                              // 계속 열어 둔 화면도 가끔 확인
+
+    // ==========================================
+    // 시작: 열 때마다 최신 데이터를 불러옴
+    // ==========================================
+    refreshAll('init');
 </script>
 
 </body>
