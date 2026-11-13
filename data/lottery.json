@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-12T19:02:13.517Z",
+ "generatedAt": "2026-11-13T02:21:47.884Z",
  "lotto": {
   "latest": 1249,
   "source": "official",
@@ -1582,12 +1582,12 @@
    {
     "game": "speetto2000",
     "round": 70,
-    "rate": 46,
+    "rate": 56,
     "totalFirst": 8,
     "remainFirst": 6,
     "totalSecond": 24,
-    "remainSecond": 17,
-    "asOf": "2026-11-06"
+    "remainSecond": 14,
+    "asOf": "2026-11-13"
    },
    {
     "game": "speetto2000",
@@ -1597,37 +1597,37 @@
     "remainFirst": 1,
     "totalSecond": 30,
     "remainSecond": 4,
-    "asOf": "2026-11-06"
+    "asOf": "2026-11-13"
    },
    {
     "game": "speetto1000",
     "round": 111,
-    "rate": 19,
+    "rate": 37,
     "totalFirst": 11,
     "remainFirst": 9,
     "totalSecond": 55,
-    "remainSecond": 53,
-    "asOf": "2026-11-06"
+    "remainSecond": 52,
+    "asOf": "2026-11-13"
    },
    {
     "game": "speetto1000",
     "round": 110,
-    "rate": 89,
+    "rate": 91,
     "totalFirst": 12,
     "remainFirst": 2,
     "totalSecond": 60,
-    "remainSecond": 19,
-    "asOf": "2026-11-06"
+    "remainSecond": 13,
+    "asOf": "2026-11-13"
    },
    {
     "game": "speetto500",
     "round": 48,
-    "rate": 60,
+    "rate": 61,
     "totalFirst": 5,
     "remainFirst": 3,
     "totalSecond": 100,
     "remainSecond": 45,
-    "asOf": "2026-11-06"
+    "asOf": "2026-11-13"
    }
   ]
  }
