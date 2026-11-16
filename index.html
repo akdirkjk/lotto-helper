@@ -789,7 +789,7 @@
             html += `<div class="speetto-card-title">${game.title}</div>`;
             if (!list.length) { html += `<p class="note">판매 중인 회차가 없습니다.</p>`; return; }
             html += `<div class="speetto-table-wrapper"><table class="speetto-table">
-                <thead><tr><th>회차</th><th>판매점 입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
+                <thead><tr><th>회차</th><th>입고율</th><th>1등 잔여</th><th>2등 잔여</th><th>추천</th></tr></thead><tbody>`;
             list.forEach(item => {
                 const rec = item.rate >= 90 && item.remainFirst >= 1;
                 html += `<tr>
