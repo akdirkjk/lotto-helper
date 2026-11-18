@@ -1,9 +1,9 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-17T04:18:52.319Z",
+ "generatedAt": "2026-11-18T03:17:57.530Z",
  "lotto": {
   "latest": 1250,
-  "source": "mirror",
+  "source": "official",
   "draws": [
    {
     "draw": 1250,
@@ -788,7 +788,7 @@
   ]
  },
  "pension": {
-  "status": "error",
+  "status": "ok",
   "source": "official",
   "latest": 341,
   "draws": [
@@ -1572,13 +1572,12 @@
      4
     ]
    }
-  ],
-  "message": "fetch failed"
+  ]
  },
  "speetto": {
-  "status": "error",
+  "status": "ok",
   "source": "official",
-  "checkedAt": "2026-11-16",
+  "checkedAt": "2026-11-18",
   "rows": [
    {
     "game": "speetto2000",
@@ -1630,7 +1629,6 @@
     "remainSecond": 45,
     "asOf": "2026-11-13"
    }
-  ],
-  "message": "fetch failed"
+  ]
  }
 }
