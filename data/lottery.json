@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-18T03:17:57.530Z",
+ "generatedAt": "2026-11-19T02:55:14.216Z",
  "lotto": {
   "latest": 1250,
   "source": "official",
@@ -1577,7 +1577,7 @@
  "speetto": {
   "status": "ok",
   "source": "official",
-  "checkedAt": "2026-11-18",
+  "checkedAt": "2026-11-19",
   "rows": [
    {
     "game": "speetto2000",
@@ -1604,7 +1604,7 @@
     "round": 111,
     "rate": 37,
     "totalFirst": 11,
-    "remainFirst": 9,
+    "remainFirst": 8,
     "totalSecond": 55,
     "remainSecond": 52,
     "asOf": "2026-11-13"
