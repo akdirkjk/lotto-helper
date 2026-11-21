@@ -1,10 +1,23 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-21T02:57:58.475Z",
+ "generatedAt": "2026-11-21T19:37:59.826Z",
  "lotto": {
-  "latest": 1250,
+  "latest": 1251,
   "source": "official",
   "draws": [
+   {
+    "draw": 1251,
+    "date": "2026-11-21",
+    "numbers": [
+     14,
+     18,
+     19,
+     29,
+     40,
+     45
+    ],
+    "bonus": 1
+   },
    {
     "draw": 1250,
     "date": "2026-11-14",
@@ -771,19 +784,6 @@
      40
     ],
     "bonus": 11
-   },
-   {
-    "draw": 1191,
-    "date": "2025-09-27",
-    "numbers": [
-     1,
-     4,
-     11,
-     12,
-     20,
-     41
-    ],
-    "bonus": 2
    }
   ]
  },
@@ -1577,7 +1577,7 @@
  "speetto": {
   "status": "ok",
   "source": "official",
-  "checkedAt": "2026-11-21",
+  "checkedAt": "2026-11-22",
   "rows": [
    {
     "game": "speetto2000",
