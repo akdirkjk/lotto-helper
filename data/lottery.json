@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generatedAt": "2026-11-26T03:55:24.350Z",
+ "generatedAt": "2026-11-26T20:26:17.334Z",
  "lotto": {
   "latest": 1251,
   "source": "official",
@@ -790,8 +790,21 @@
  "pension": {
   "status": "ok",
   "source": "official",
-  "latest": 342,
+  "latest": 343,
   "draws": [
+   {
+    "draw": 343,
+    "date": "2026-11-26",
+    "group": 1,
+    "numbers": [
+     5,
+     7,
+     4,
+     1,
+     6,
+     9
+    ]
+   },
    {
     "draw": 342,
     "date": "2026-11-19",
@@ -1558,33 +1571,20 @@
      2,
      7
     ]
-   },
-   {
-    "draw": 283,
-    "date": "2025-10-02",
-    "group": 3,
-    "numbers": [
-     6,
-     5,
-     3,
-     5,
-     0,
-     3
-    ]
    }
   ]
  },
  "speetto": {
   "status": "ok",
   "source": "official",
-  "checkedAt": "2026-11-26",
+  "checkedAt": "2026-11-27",
   "rows": [
    {
     "game": "speetto2000",
     "round": 70,
     "rate": 64,
     "totalFirst": 8,
-    "remainFirst": 4,
+    "remainFirst": 2,
     "totalSecond": 24,
     "remainSecond": 14,
     "asOf": "2026-11-20"
